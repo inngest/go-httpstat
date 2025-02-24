@@ -24,6 +24,11 @@ type Result struct {
 	ServerProcessing time.Duration
 	contentTransfer  time.Duration
 
+	// DNS and connection Info
+	IsIPv6      bool
+	Addresses   []net.IPAddr
+	ConnectedTo net.Addr
+
 	// The followings are timeline of request
 	NameLookup    time.Duration
 	Connect       time.Duration

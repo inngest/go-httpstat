@@ -52,6 +52,13 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 
 			r.DNSLookup = r.dnsDone.Sub(r.dnsStart)
 			r.NameLookup = r.dnsDone.Sub(r.dnsStart)
+
+			for _, ip := range i.Addrs {
+				if IsIPv6(ip.IP.String()) {
+					r.IsIPv6 = true
+				}
+			}
+			r.Addresses = i.Addrs
 		},
 
 		ConnectStart: func(_, _ string) {
@@ -150,4 +157,12 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 			r.transferStart = r.serverDone
 		},
 	})
+}
+
+func IsIPv4(address string) bool {
+	return strings.Count(address, ":") < 2
+}
+
+func IsIPv6(address string) bool {
+	return strings.Count(address, ":") >= 2
 }
