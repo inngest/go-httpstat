@@ -7,12 +7,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"strings"
+	"sync"
 	"time"
 )
 
 // Result stores httpstat info.
 type Result struct {
+	mutex sync.Mutex
+
 	// The following are duration for each phase
 	DNSLookup        time.Duration
 	TCPConnection    time.Duration
@@ -27,11 +31,6 @@ type Result struct {
 	StartTransfer time.Duration
 	total         time.Duration
 
-	t0 time.Time
-	t1 time.Time
-	t2 time.Time
-	t3 time.Time
-	t4 time.Time
 	t5 time.Time // need to be provided from outside
 
 	dnsStart      time.Time
@@ -69,7 +68,7 @@ func (r *Result) durations() map[string]time.Duration {
 }
 
 // Format formats stats result.
-func (r Result) Format(s fmt.State, verb rune) {
+func (r *Result) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
@@ -123,7 +122,6 @@ func (r Result) Format(s fmt.State, verb rune) {
 		}
 		io.WriteString(s, strings.Join(list, ", "))
 	}
-
 }
 
 // WithHTTPStat is a wrapper of httptrace.WithClientTrace. It records the

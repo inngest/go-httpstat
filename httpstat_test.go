@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"testing"
@@ -58,7 +57,7 @@ func TestHTTPStat_HTTPS(t *testing.T) {
 		t.Fatal("client.Do failed:", err)
 	}
 
-	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res.Body); err != nil {
 		t.Fatal("io.Copy failed:", err)
 	}
 	res.Body.Close()
@@ -85,7 +84,7 @@ func TestHTTPStat_HTTP(t *testing.T) {
 		t.Fatal("client.Do failed:", err)
 	}
 
-	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res.Body); err != nil {
 		t.Fatal("io.Copy failed:", err)
 	}
 	res.Body.Close()
@@ -122,7 +121,7 @@ func TestHTTPStat_KeepAlive(t *testing.T) {
 		t.Fatal("Request failed:", err)
 	}
 
-	if _, err := io.Copy(ioutil.Discard, res1.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res1.Body); err != nil {
 		t.Fatal("Copy body failed:", err)
 	}
 	res1.Body.Close()
@@ -136,7 +135,7 @@ func TestHTTPStat_KeepAlive(t *testing.T) {
 		t.Fatal("Request failed:", err)
 	}
 
-	if _, err := io.Copy(ioutil.Discard, res2.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res2.Body); err != nil {
 		t.Fatal("Copy body failed:", err)
 	}
 	res2.Body.Close()
@@ -180,7 +179,7 @@ func TestHTTPStat_beforeGO17(t *testing.T) {
 		t.Fatal("client.Do failed:", err)
 	}
 
-	if _, err := io.Copy(ioutil.Discard, res.Body); err != nil {
+	if _, err := io.Copy(io.Discard, res.Body); err != nil {
 		t.Fatal("io.Copy failed:", err)
 	}
 	res.Body.Close()
@@ -244,7 +243,7 @@ Start Transfer:  100 ms
 Total:           100 ms
 `
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "%+v", result)
+	fmt.Fprintf(&buf, "%+v", &result)
 	if got := buf.String(); want != got {
 		t.Fatalf("expect to be eq:\n\nwant:\n\n%s\ngot:\n\n%s\n", want, got)
 	}

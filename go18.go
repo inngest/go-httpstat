@@ -1,11 +1,10 @@
-// +build go1.8
-
 package httpstat
 
 import (
 	"context"
 	"crypto/tls"
 	"net/http/httptrace"
+	"strings"
 	"time"
 )
 
@@ -41,10 +40,14 @@ func (r *Result) Total(t time.Time) time.Duration {
 func withClientTrace(ctx context.Context, r *Result) context.Context {
 	return httptrace.WithClientTrace(ctx, &httptrace.ClientTrace{
 		DNSStart: func(i httptrace.DNSStartInfo) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.dnsStart = time.Now()
 		},
 
 		DNSDone: func(i httptrace.DNSDoneInfo) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.dnsDone = time.Now()
 
 			r.DNSLookup = r.dnsDone.Sub(r.dnsStart)
@@ -52,6 +55,8 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 		},
 
 		ConnectStart: func(_, _ string) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.tcpStart = time.Now()
 
 			// When connecting to IP (When no DNS lookup)
@@ -62,6 +67,8 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 		},
 
 		ConnectDone: func(network, addr string, err error) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.tcpDone = time.Now()
 
 			r.TCPConnection = r.tcpDone.Sub(r.tcpStart)
@@ -69,11 +76,15 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 		},
 
 		TLSHandshakeStart: func() {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.isTLS = true
 			r.tlsStart = time.Now()
 		},
 
 		TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.tlsDone = time.Now()
 
 			r.TLSHandshake = r.tlsDone.Sub(r.tlsStart)
@@ -81,14 +92,20 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 		},
 
 		GotConn: func(i httptrace.GotConnInfo) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			// Handle when keep alive is used and connection is reused.
 			// DNSStart(Done) and ConnectStart(Done) is skipped
 			if i.Reused {
 				r.isReused = true
 			}
+
+			r.ConnectedTo = i.Conn.RemoteAddr()
 		},
 
 		WroteRequest: func(info httptrace.WroteRequestInfo) {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.serverStart = time.Now()
 
 			// When client doesn't use DialContext or using old (before go1.7) `net`
@@ -123,6 +140,8 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 		},
 
 		GotFirstResponseByte: func() {
+			r.mutex.Lock()
+			defer r.mutex.Unlock()
 			r.serverDone = time.Now()
 
 			r.ServerProcessing = r.serverDone.Sub(r.serverStart)
