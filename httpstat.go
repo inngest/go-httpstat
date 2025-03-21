@@ -27,7 +27,7 @@ type Result struct {
 	// DNS and connection Info
 	IsIPv6      bool
 	Addresses   []net.IPAddr
-	ConnectedTo net.Addr
+	ConnectedTo Addr
 
 	// The followings are timeline of request
 	NameLookup    time.Duration
@@ -54,6 +54,11 @@ type Result struct {
 
 	// isReused is true when connection is reused (keep-alive)
 	isReused bool
+}
+
+type Addr struct {
+	Network string
+	Address string
 }
 
 func (r *Result) durations() map[string]time.Duration {

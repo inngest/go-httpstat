@@ -107,7 +107,10 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 				r.isReused = true
 			}
 
-			r.ConnectedTo = i.Conn.RemoteAddr()
+			r.ConnectedTo = Addr{
+				Network: i.Conn.RemoteAddr().Network(),
+				Address: i.Conn.RemoteAddr().String(),
+			}
 		},
 
 		WroteRequest: func(info httptrace.WroteRequestInfo) {
