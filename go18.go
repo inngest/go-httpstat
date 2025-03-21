@@ -3,6 +3,7 @@ package httpstat
 import (
 	"context"
 	"crypto/tls"
+	"net"
 	"net/http/httptrace"
 	"strings"
 	"time"
@@ -107,9 +108,24 @@ func withClientTrace(ctx context.Context, r *Result) context.Context {
 				r.isReused = true
 			}
 
-			r.ConnectedTo = Addr{
-				Network: i.Conn.RemoteAddr().Network(),
-				Address: i.Conn.RemoteAddr().String(),
+			switch addr := i.Conn.RemoteAddr().(type) {
+			case *net.TCPAddr:
+				r.ConnectedTo = ConnectedTo{
+					IP:   addr.IP.String(),
+					Port: addr.Port,
+					Zone: addr.Zone,
+				}
+			case *net.UDPAddr:
+				r.ConnectedTo = ConnectedTo{
+					IP:   addr.IP.String(),
+					Port: addr.Port,
+					Zone: addr.Zone,
+				}
+			case *net.IPAddr:
+				r.ConnectedTo = ConnectedTo{
+					IP:   addr.IP.String(),
+					Zone: addr.Zone,
+				}
 			}
 		},
 
