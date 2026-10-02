@@ -204,8 +204,8 @@ func TestTotal_Zero(t *testing.T) {
 	result.End(time.Now())
 
 	zero := 0 * time.Millisecond
-	if result.total != zero {
-		t.Fatalf("Total time is %d, want %d", result.total, zero)
+	if result.Total != zero {
+		t.Fatalf("Total time is %d, want %d", result.Total, zero)
 	}
 
 	if result.contentTransfer != zero {
@@ -225,7 +225,7 @@ func TestHTTPStat_Formatter(t *testing.T) {
 		Connect:       100 * time.Millisecond,
 		Pretransfer:   100 * time.Millisecond,
 		StartTransfer: 100 * time.Millisecond,
-		total:         100 * time.Millisecond,
+		Total:         100 * time.Millisecond,
 
 		t5: time.Now(),
 	}
