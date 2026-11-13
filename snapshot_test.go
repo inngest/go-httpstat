@@ -10,7 +10,7 @@ import (
 
 func TestSnapshotRequestProgress(t *testing.T) {
 	var result Result
-	trace := httptrace.ContextClientTrace(WithHTTPStat(context.Background(), &result))
+	trace := httptrace.ContextClientTrace(WithHTTPStatProgress(context.Background(), &result))
 	trace.ConnectStart("tcp", "192.0.2.1:443")
 	trace.ConnectDone("tcp", "192.0.2.1:443", nil)
 	trace.TLSHandshakeStart()
@@ -33,5 +33,12 @@ func TestSnapshotRequestProgress(t *testing.T) {
 	trace.GotFirstResponseByte()
 	if got := result.Snapshot(); !got.FirstByte {
 		t.Fatalf("unexpected snapshot after first response byte: %+v", got)
+	}
+
+	trace.GetConn("redirect.example:443")
+	trace.TLSHandshakeStart()
+	trace.TLSHandshakeDone(tls.ConnectionState{}, errors.New("reset after redirect"))
+	if got := result.Snapshot(); !got.TLSStarted || got.TLSCompleted || got.RequestWritten || got.FirstByte {
+		t.Fatalf("unexpected snapshot after redirect: %+v", got)
 	}
 }
